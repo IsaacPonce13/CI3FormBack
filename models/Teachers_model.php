@@ -20,18 +20,15 @@ class Teachers_model extends CI_Model {
         return $query->row(); // Retorna un solo resultado
     }
 
-    // Agregar un nuevo maestro
-    public function insert($data) {
-        $this->db->insert('teachers', [
-            'name' => $data['name'],
-            'lastname' => $data['lastname'],
-            'subjects' => implode(',', $data['subjects']),
-            'docs' => $data['docs']
-        ]);
-
-        return $this->db->insert_id();
-        // return $this->db->insert($this->table, $data);
+    // Agregar un  maestro
+    public function insert_teacher($data) {
+        return $this->db->insert('maestros', $data);
     }
+
+    public function update_teacher($id, $data) {
+        $this->db->where('id', $id);
+        return $this->db->update('maestros', $data); // Retorna true si la actualización fue exitosa
+    }    
 
     // Eliminar maestro por ID
     public function delete($id) {

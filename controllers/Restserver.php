@@ -41,34 +41,59 @@ class Restserver extends REST_Controller {
         }
     }
 
-    // // Insertar un maestro (requiere JSON en el body)
-    // public function teacher_post() {
-    //     $data = json_decode(file_get_contents("php://input"), true);
-    //     if ($this->Teachers_model->insert($data)) {
-    //         $this->response(['message' => 'maestro agregado correctamente'], REST_Controller::HTTP_CREATED);
-    //     } else {
-    //         $this->response(['message' => 'Error al agregar maestro'], REST_Controller::HTTP_BAD_REQUEST);
-    //     }
-    // }
-
+    // Agregar un maestro
     public function teacher_post() {
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        if (!$data || empty($data['name']) || empty($data['lastname'])) {
-            $this->response(['message' => 'Datos inválidos'], REST_Controller::HTTP_BAD_REQUEST);
+        // Obtener los datos enviados en la solicitud POST
+        $data = json_decode($this->input->raw_input_stream, true);
+    
+        if (!$data) {
+            $this->response(['message' => 'Datos no válidos'], REST_Controller::HTTP_BAD_REQUEST);
             return;
         }
-
-        // Insertar el maestro en la base de datos
-        $teacher_id = $this->Teachers_model->insert_teacher($data);
-
-        if ($teacher_id) {
+    
+        // Convertir el array de materias en JSON
+        if (isset($data['materias']) && is_array($data['materias'])) {
+            $data['materias'] = json_encode($data['materias']);
+        }
+    
+        // Insertar los datos en la base de datos
+        $inserted = $this->Teachers_model->insert_teacher($data);
+    
+        if ($inserted) {
             $this->response(['message' => 'Maestro agregado correctamente'], REST_Controller::HTTP_CREATED);
         } else {
-            $this->response(['message' => 'Error al agregar maestro'], REST_Controller::HTTP_BAD_REQUEST);
+            $this->response(['message' => 'Error al agregar maestro'], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
+    
+
+// Actualizar información de un maestro
+public function teacher_put($id) {
+    // Obtener los datos enviados en la solicitud PUT
+    $data = json_decode($this->input->raw_input_stream, true);
+
+    if (!$data) {
+        $this->response(['message' => 'Datos no válidos'], REST_Controller::HTTP_BAD_REQUEST);
+        return;
+    }
+
+    // Convertir el array de materias en JSON si existe
+    if (isset($data['materias']) && is_array($data['materias'])) {
+        $data['materias'] = json_encode($data['materias']);
+    }
+
+    // Intentar actualizar el maestro
+    $updated = $this->Teachers_model->update_teacher($id, $data);
+
+    if ($updated) {
+        $this->response(['message' => 'Maestro actualizado correctamente'], REST_Controller::HTTP_OK);
+    } else {
+        $this->response(['message' => 'Error al actualizar maestro'], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+
     // Eliminar un maestro por ID
     public function teacher_delete($id) {
         if ($this->Teachers_model->delete($id)) {
